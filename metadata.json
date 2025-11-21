@@ -1,0 +1,7 @@
+{
+  "name": "Love & Kitchen (Couple's Cooking)",
+  "description": "A gamified cooking companion for couples. Plan menus, order dishes from each other, learn recipes with AI, and track your culinary journey together.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
