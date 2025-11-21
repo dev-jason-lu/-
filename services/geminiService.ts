@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // Initialize Gemini API Client
@@ -78,4 +79,41 @@ export const createChefChat = () => {
       systemInstruction: "You are 'Chef Cupid', a cooking tutor for couples. You help them plan meals, solve cooking disasters, and make cooking romantic. Keep answers concise unless asked for a full recipe.",
     }
   });
+};
+
+/**
+ * Generates a fun Date Night theme and menu.
+ */
+export const generateDateNightIdea = async (): Promise<string> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: "Generate a fun, creative 'Date Night Menu' theme with 3 courses (Appetizer, Main, Dessert). Give it a catchy title and brief descriptions.",
+    });
+    return response.text || "Romantic Candlelit Dinner";
+  } catch (error) {
+    return "Error generating date night idea.";
+  }
+};
+
+/**
+ * Autofills dish details based on a name.
+ */
+export const generateDishDetails = async (dishName: string): Promise<string> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Provide a short JSON description for a dish named "${dishName}". 
+      Format: {"description": "string", "calories": number, "difficulty": "Easy"|"Medium"|"Hard", "tags": ["string", "string"]}. 
+      Only return the JSON string, no markdown blocks.`,
+    });
+    let text = response.text?.trim() || "";
+    // Cleanup if model returns markdown code blocks
+    if (text.startsWith("```json")) text = text.replace("```json", "").replace("```", "");
+    if (text.startsWith("```")) text = text.replace("```", "").replace("```", "");
+    return text;
+  } catch (error) {
+    console.error("Error generating details", error);
+    return "";
+  }
 };

@@ -1,9 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage } from '../types';
-import { generateCookingAdvice, analyzeFoodImage, createChefChat, fileToGenerativePart } from '../services/geminiService';
-import { Send, Camera, Sparkles, ChefHat, Image as ImageIcon, Loader2 } from 'lucide-react';
 
-export const ChefAIView: React.FC = () => {
+import React, { useState, useRef, useEffect } from 'react';
+import { ChatMessage, AppTheme } from '../types';
+import { generateCookingAdvice, analyzeFoodImage, createChefChat, fileToGenerativePart, generateDateNightIdea } from '../services/geminiService';
+import { Send, Camera, Sparkles, ChefHat, Image as ImageIcon, Loader2, Dices } from 'lucide-react';
+
+interface ChefAIViewProps {
+    theme: AppTheme;
+}
+
+export const ChefAIView: React.FC<ChefAIViewProps> = ({ theme }) => {
   const [activeTab, setActiveTab] = useState<'chat' | 'analyze'>('chat');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     { id: 'init', role: 'model', text: "Hello lovebirds! I'm Chef Cupid 💘. I can help you find a recipe, save a burnt dinner, or plan a romantic meal. What's cooking?", timestamp: Date.now() }
@@ -66,6 +71,32 @@ export const ChefAIView: React.FC = () => {
     }
   };
 
+  const handleSurpriseMe = async () => {
+    setIsLoading(true);
+    try {
+        const idea = await generateDateNightIdea();
+        const userMsg: ChatMessage = {
+            id: Date.now().toString(),
+            role: 'user',
+            text: "Generate a surprise date night menu idea!",
+            timestamp: Date.now()
+        };
+        setChatHistory(prev => [...prev, userMsg]);
+
+        const modelMsg: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'model',
+            text: `🎲 **Surprise Date Night!**\n\n${idea}`,
+            timestamp: Date.now()
+        };
+        setChatHistory(prev => [...prev, modelMsg]);
+    } catch(e) {
+        console.error(e);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -100,13 +131,13 @@ export const ChefAIView: React.FC = () => {
       <div className="flex bg-white border-b border-slate-200 p-1">
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-2 ${activeTab === 'chat' ? 'bg-rose-100 text-rose-700' : 'text-slate-500'}`}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-2 ${activeTab === 'chat' ? `${theme.secondary} ${theme.text}` : 'text-slate-500'}`}
         >
           <ChefHat size={18} /> Chat Chef
         </button>
         <button
           onClick={() => setActiveTab('analyze')}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-2 ${activeTab === 'analyze' ? 'bg-rose-100 text-rose-700' : 'text-slate-500'}`}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-2 ${activeTab === 'analyze' ? `${theme.secondary} ${theme.text}` : 'text-slate-500'}`}
         >
           <Camera size={18} /> Food Lens
         </button>
@@ -116,24 +147,36 @@ export const ChefAIView: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === 'chat' ? (
           <>
+            <div className="flex justify-center">
+                <button 
+                    onClick={handleSurpriseMe}
+                    disabled={isLoading}
+                    className="bg-purple-500 text-white text-xs px-4 py-2 rounded-full flex items-center gap-2 shadow-md hover:bg-purple-600 transition-transform transform active:scale-95"
+                >
+                    <Dices size={14} />
+                    Surprise Us with a Menu Idea!
+                </button>
+            </div>
             {chatHistory.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${
                   msg.role === 'user' 
-                    ? 'bg-rose-500 text-white rounded-tr-none' 
+                    ? `${theme.primary} text-white rounded-tr-none` 
                     : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'
                 }`}>
-                  {msg.text}
+                  <div className="markdown-body">
+                   {msg.text}
+                  </div>
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
                  <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
-                   <div className="flex gap-1">
-                     <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
-                     <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
-                     <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                   <div className={`flex gap-1 ${theme.text}`}>
+                     <span className="w-2 h-2 bg-current opacity-75 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
+                     <span className="w-2 h-2 bg-current opacity-75 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                     <span className="w-2 h-2 bg-current opacity-75 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
                    </div>
                  </div>
               </div>
@@ -179,14 +222,15 @@ export const ChefAIView: React.FC = () => {
                 <input 
                   type="text"
                   placeholder="Optional: What can I make with this?"
-                  className="w-full p-3 border border-slate-200 rounded-xl text-sm mb-3 focus:ring-2 focus:ring-rose-200 outline-none"
+                  className={`w-full p-3 border border-slate-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-opacity-50`}
+                  style={{ '--tw-ring-color': theme.primary } as any}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
                 <button 
                   onClick={handleAnalyze}
                   disabled={!selectedImage || isLoading}
-                  className={`w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 ${!selectedImage || isLoading ? 'bg-slate-300' : 'bg-rose-500 shadow-lg shadow-rose-200'}`}
+                  className={`w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 ${!selectedImage || isLoading ? 'bg-slate-300' : `${theme.primary} ${theme.shadow}`}`}
                 >
                   {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
                   Analyze & Generate Recipe
@@ -196,7 +240,7 @@ export const ChefAIView: React.FC = () => {
 
             {analysisResult && (
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 animate-in slide-in-from-bottom-5">
-                <h3 className="font-bold text-rose-600 mb-2 flex items-center gap-2">
+                <h3 className={`font-bold ${theme.text} mb-2 flex items-center gap-2`}>
                   <ChefHat size={18} /> Chef's Analysis
                 </h3>
                 <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap markdown-body">
@@ -216,13 +260,14 @@ export const ChefAIView: React.FC = () => {
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }}}
             placeholder="Ask Chef Cupid..."
-            className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-200 outline-none resize-none text-sm max-h-32"
+            className={`flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none text-sm max-h-32`}
+            style={{ '--tw-ring-color': theme.primary } as any}
             rows={1}
           />
           <button 
             onClick={handleSendMessage}
             disabled={!inputText.trim() || isLoading}
-            className={`p-3 rounded-full flex-shrink-0 transition-all ${!inputText.trim() ? 'bg-slate-200 text-slate-400' : 'bg-rose-500 text-white shadow-md hover:scale-105'}`}
+            className={`p-3 rounded-full flex-shrink-0 transition-all ${!inputText.trim() ? 'bg-slate-200 text-slate-400' : `${theme.primary} text-white shadow-md hover:scale-105`}`}
           >
             <Send size={20} className={inputText.trim() ? 'ml-0.5' : ''} />
           </button>

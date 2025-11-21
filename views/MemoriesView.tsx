@@ -1,13 +1,15 @@
+
 import React from 'react';
-import { Order, Achievement } from '../types';
+import { Order, Achievement, AppTheme } from '../types';
 import { Trophy, Calendar, Camera, Heart } from 'lucide-react';
 
 interface MemoriesViewProps {
   orders: Order[];
   achievements: Achievement[];
+  theme: AppTheme;
 }
 
-export const MemoriesView: React.FC<MemoriesViewProps> = ({ orders, achievements }) => {
+export const MemoriesView: React.FC<MemoriesViewProps> = ({ orders, achievements, theme }) => {
   const completedOrders = orders.filter(o => o.status === 'Completed');
   const totalRatings = completedOrders.reduce((acc, curr) => acc + (curr.rating || 0), 0);
   const averageRating = completedOrders.length > 0 ? (totalRatings / completedOrders.length).toFixed(1) : '0.0';
@@ -15,7 +17,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ orders, achievements
   return (
     <div className="p-4 pb-24 bg-slate-50 min-h-screen">
       {/* Stats Card */}
-      <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg mb-6">
+      <div className={`bg-gradient-to-br ${theme.gradient} rounded-3xl p-6 text-white shadow-lg mb-6`}>
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           <Heart className="fill-white" /> Our Culinary Journey
         </h2>
@@ -54,19 +56,19 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ orders, achievements
 
       {/* Timeline / History */}
       <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-        <Calendar size={18} className="text-rose-500" /> Food Diary
+        <Calendar size={18} className={theme.text} /> Food Diary
       </h3>
       <div className="space-y-6 relative pl-4 border-l-2 border-slate-200 ml-2">
         {completedOrders.map((order) => (
           <div key={order.id} className="relative">
-            <div className="absolute -left-[21px] top-0 bg-rose-500 w-4 h-4 rounded-full border-2 border-white shadow-sm"></div>
+            <div className={`absolute -left-[21px] top-0 ${theme.primary} w-4 h-4 rounded-full border-2 border-white shadow-sm`}></div>
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-bold text-slate-800">{order.dishName}</h4>
                 <span className="text-xs text-slate-400">{new Date(order.orderDate).toLocaleDateString()}</span>
               </div>
               
-              {/* Simulated Photo Placeholder - in real app, this would be user uploaded */}
+              {/* Simulated Photo Placeholder */}
               <div className="h-32 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-slate-400">
                 <Camera size={24} />
               </div>
@@ -79,7 +81,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ orders, achievements
                 </div>
               )}
               <div className="mt-2 flex items-center gap-1">
-                <span className="text-xs font-bold text-rose-500">Chef: {order.chef}</span>
+                <span className={`text-xs font-bold ${theme.text}`}>Chef: {order.chef}</span>
               </div>
             </div>
           </div>

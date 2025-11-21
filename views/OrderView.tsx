@@ -1,14 +1,16 @@
+
 import React, { useState } from 'react';
-import { Order, Dish } from '../types';
-import { CheckCircle2, Clock, MessageSquare, Star } from 'lucide-react';
+import { Order, Dish, AppTheme } from '../types';
+import { Clock, MessageSquare, Star } from 'lucide-react';
 
 interface OrderViewProps {
   orders: Order[];
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   rateOrder: (orderId: string, rating: number, review: string) => void;
+  theme: AppTheme;
 }
 
-export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus, rateOrder }) => {
+export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus, rateOrder, theme }) => {
   const [ratingOrderId, setRatingOrderId] = useState<string | null>(null);
   const [ratingValue, setRatingValue] = useState(5);
   const [reviewText, setReviewText] = useState('');
@@ -55,7 +57,7 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
         )}
 
         {sortedOrders.map(order => (
-          <div key={order.id} className={`bg-white rounded-2xl p-4 border-l-4 shadow-sm ${order.status === 'Completed' ? 'border-slate-300 opacity-80' : 'border-rose-500'}`}>
+          <div key={order.id} className={`bg-white rounded-2xl p-4 border-l-4 shadow-sm ${order.status === 'Completed' ? 'border-slate-300 opacity-80' : theme.border.replace('border-200', 'border-400').replace('border', 'border-l')}`}>
             <div className="flex justify-between items-start mb-2">
               <div>
                 <h3 className="font-bold text-lg text-slate-800">{order.dishName}</h3>
@@ -77,8 +79,8 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
             </div>
 
             {order.chefNote && (
-              <div className="bg-rose-50 p-2 rounded-lg text-sm text-rose-700 mb-3 flex items-start gap-2">
-                <MessageSquare size={14} className="mt-1 flex-shrink-0" />
+              <div className={`${theme.secondary} p-2 rounded-lg text-sm text-slate-700 mb-3 flex items-start gap-2`}>
+                <MessageSquare size={14} className={`mt-1 flex-shrink-0 ${theme.text}`} />
                 <p>"{order.chefNote}"</p>
               </div>
             )}
@@ -87,7 +89,7 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => handleStatusChange(order)}
-                  className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-2 rounded-xl text-sm font-medium transition-colors"
+                  className={`flex-1 ${theme.primary} hover:opacity-90 text-white py-2 rounded-xl text-sm font-medium transition-colors`}
                 >
                   {order.status === 'Pending' ? 'Start Cooking' :
                    order.status === 'Cooking' ? 'Serve Dish' :
@@ -100,7 +102,7 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
                <div className="mt-2">
                   <button 
                     onClick={() => setRatingOrderId(order.id)}
-                    className="w-full border-2 border-rose-200 text-rose-600 py-2 rounded-xl text-sm font-bold hover:bg-rose-50"
+                    className={`w-full border-2 ${theme.border} ${theme.text} py-2 rounded-xl text-sm font-bold hover:bg-slate-50`}
                   >
                     Rate Meal
                   </button>
@@ -140,7 +142,8 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
 
             <textarea
               placeholder="Write a sweet thank you note..."
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm focus:ring-2 focus:ring-rose-200 outline-none"
+              className={`w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50`}
+              style={{ '--tw-ring-color': theme.primary } as any}
               rows={3}
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
@@ -148,7 +151,7 @@ export const OrderView: React.FC<OrderViewProps> = ({ orders, updateOrderStatus,
 
             <div className="flex gap-3">
               <button onClick={() => setRatingOrderId(null)} className="flex-1 py-2 text-gray-500">Cancel</button>
-              <button onClick={submitRating} className="flex-1 py-2 bg-rose-500 text-white rounded-xl font-bold shadow-lg shadow-rose-200">Send Love</button>
+              <button onClick={submitRating} className={`flex-1 py-2 ${theme.primary} text-white rounded-xl font-bold shadow-lg`}>Send Love</button>
             </div>
           </div>
         </div>
